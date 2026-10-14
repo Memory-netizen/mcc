@@ -5,6 +5,7 @@ BUILD_DIR := ./build
 # Settings
 TARGET := mcc
 CFLAGS := -Wall -Wextra -Werror -std=c23 -fno-common
+CFLAGS += -D_GNU_SOURCE
 CFLAGS += -I$(SRC_DIR)
 LDFLAGS :=
 

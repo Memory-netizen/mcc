@@ -1,0 +1,214 @@
+token = keyword | identifier | constant | string-literal | punctuator ;
+
+preprocessing-token = header-name
+                    | identifier
+                    | pp-number
+                    | character-literal
+                    | string-literal
+                    | punctuator
+                    | other-universal-character-name
+                    | other-non-whitespace-character ;
+
+other-universal-character-name = universal-character-name ;
+(* 仅当不能匹配为上述任一 preprocessing-token 时 *)
+
+other-non-whitespace-character = ? 任意非空白字符 ? ;
+(* 仅当不能匹配为上述任一 preprocessing-token 时 *)
+
+keyword = "alignas" | "alignof" | "auto" | "bool" | "break" | "case" | "char"
+        | "const" | "constexpr" | "continue" | "default" | "do" | "double"
+        | "else" | "enum" | "extern" | "false" | "float" | "for" | "goto"
+        | "if" | "inline" | "int" | "long" | "nullptr" | "register"
+        | "restrict" | "return" | "short" | "signed" | "sizeof" | "static"
+        | "static_assert" | "struct" | "switch" | "thread_local" | "true"
+        | "typedef" | "typeof" | "typeof_unqual" | "union" | "unsigned"
+        | "void" | "volatile" | "while"
+        | "_Atomic" | "_BitInt" | "_Complex" | "_Countof"
+        | "_Decimal128" | "_Decimal32" | "_Decimal64" | "_Generic"
+        | "_Noreturn"
+        | "_Alignas" | "_Alignof" | "_Bool" | "_Static_assert"
+        | "_Thread_local" ;
+
+identifier = identifier-start, { identifier-continue } ;
+identifier-start = nondigit | XID_Start | ucn-XID_Start ;
+identifier-continue = digit | nondigit | XID_Continue | ucn-XID_Continue ;
+
+ucn-XID_Start = universal-character-name ;
+(* 码点属于 XID_Start *)
+
+ucn-XID_Continue = universal-character-name ;
+(* 码点属于 XID_Continue *)
+
+nondigit = "_" | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+         | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s"
+         | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+         | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J"
+         | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T"
+         | "U" | "V" | "W" | "X" | "Y" | "Z" ;
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+universal-character-name = "\\u", hex-quad
+                         | "\\U", hex-quad, hex-quad
+                         | "\\u{", simple-hexadecimal-digit-sequence, "}"
+                         | "\\U{", simple-hexadecimal-digit-sequence, "}" ;
+
+hex-quad = hexadecimal-digit, hexadecimal-digit, hexadecimal-digit, hexadecimal-digit ;
+
+simple-hexadecimal-digit-sequence = hexadecimal-digit, { hexadecimal-digit } ;
+
+constant = integer-literal
+         | floating-literal
+         | enumeration-constant
+         | character-literal
+         | predefined-constant ;
+
+enumeration-constant = identifier ;
+(* 词法上等同 identifier *)
+
+integer-literal = decimal-literal, [integer-suffix]
+                | octal-literal, [integer-suffix]
+                | hexadecimal-literal, [integer-suffix]
+                | binary-literal, [integer-suffix] ;
+
+decimal-literal = nonzero-digit, { ["'"], digit } ;
+
+hexadecimal-literal = hexadecimal-prefix, hexadecimal-digit-sequence ;
+
+octal-literal = prefixed-octal-literal
+              | unprefixed-octal-literal ;
+
+unprefixed-octal-literal = "0"
+                         | "0", ["'"], octal-digit-sequence ;
+
+prefixed-octal-literal = octal-prefix, octal-digit-sequence ;
+
+binary-literal = binary-prefix, binary-digit, { ["'"], binary-digit } ;
+
+hexadecimal-prefix = "0x" | "0X" ;
+octal-prefix = "0o" | "0O" ;
+binary-prefix = "0b" | "0B" ;
+
+nonzero-digit = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+hexadecimal-digit-sequence = hexadecimal-digit, { ["'"], hexadecimal-digit } ;
+octal-digit-sequence = octal-digit, { ["'"], octal-digit } ;
+
+hexadecimal-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+                  | "a" | "b" | "c" | "d" | "e" | "f"
+                  | "A" | "B" | "C" | "D" | "E" | "F" ;
+
+octal-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" ;
+
+binary-digit = "0" | "1" ;
+
+integer-suffix = unsigned-suffix, [long-suffix]
+               | unsigned-suffix, long-long-suffix
+               | unsigned-suffix, bit-precise-int-suffix
+               | long-suffix, [unsigned-suffix]
+               | long-long-suffix, [unsigned-suffix]
+               | bit-precise-int-suffix, [unsigned-suffix] ;
+
+bit-precise-int-suffix = "wb" | "WB" ;
+unsigned-suffix = "u" | "U" ;
+long-suffix = "l" | "L" ;
+long-long-suffix = "ll" | "LL" ;
+
+floating-literal = decimal-floating-literal
+                 | hexadecimal-floating-literal ;
+
+decimal-floating-literal = fractional-literal, [exponent-part], [floating-suffix]
+                         | digit-sequence, exponent-part, [floating-suffix] ;
+
+hexadecimal-floating-literal = hexadecimal-prefix,
+                               (hexadecimal-fractional-literal | hexadecimal-digit-sequence),
+                               binary-exponent-part,
+                               [floating-suffix] ;
+
+fractional-literal = [digit-sequence], ".", digit-sequence
+                   | digit-sequence, "." ;
+
+exponent-part = ("e" | "E"), [sign], digit-sequence ;
+
+sign = "+" | "-" ;
+
+digit-sequence = digit, { ["'"], digit } ;
+
+hexadecimal-fractional-literal = [hexadecimal-digit-sequence], ".", hexadecimal-digit-sequence
+                               | hexadecimal-digit-sequence, "." ;
+
+binary-exponent-part = ("p" | "P"), [sign], digit-sequence ;
+
+real-floating-suffix = "f" | "l" | "F" | "L"
+                     | "df" | "dd" | "dl"
+                     | "DF" | "DD" | "DL" ;
+
+floating-suffix = real-floating-suffix, [complex-suffix]
+                | complex-suffix, [real-floating-suffix] ;
+
+complex-suffix = "i" | "I" | "j" | "J" ;
+
+character-literal = [encoding-prefix], "'", c-char-sequence, "'" ;
+
+encoding-prefix = "u8" | "u" | "U" | "L" ;
+
+c-char-sequence = c-char, { c-char } ;
+
+c-char = ? 源字符集中除 '、\、换行外的任意字符 ?
+       | escape-sequence ;
+
+escape-sequence = simple-escape-sequence
+                | octal-escape-sequence
+                | hexadecimal-escape-sequence
+                | universal-character-name ;
+
+simple-escape-sequence = "\\'" | "\\\"" | "\\?" | "\\\\"
+                       | "\\a" | "\\b" | "\\f" | "\\n"
+                       | "\\r" | "\\t" | "\\v" ;
+
+octal-escape-sequence = "\\", octal-digit
+                      | "\\", octal-digit, octal-digit
+                      | "\\", octal-digit, octal-digit, octal-digit
+                      | "\\o{", simple-octal-digit-sequence, "}" ;
+
+simple-octal-digit-sequence = octal-digit, { octal-digit } ;
+
+hexadecimal-escape-sequence = "\\x", simple-hexadecimal-digit-sequence
+                            | "\\x{", simple-hexadecimal-digit-sequence, "}" ;
+
+predefined-constant = "false" | "true" | "nullptr" ;
+
+string-literal = [encoding-prefix], "\"", [s-char-sequence], "\"" ;
+
+s-char-sequence = s-char, { s-char } ;
+
+s-char = ? 源字符集中除双引号、\、换行外的任意字符 ?
+       | escape-sequence ;
+
+punctuator = "[" | "]" | "(" | ")" | "{" | "}" | "." | "->"
+           | "++" | "--" | "&" | "*" | "+" | "-" | "~" | "!"
+           | "/" | "%" | "<<" | ">>" | "<" | ">" | "<=" | ">="
+           | "==" | "!=" | "^" | "|" | "&&" | "||"
+           | "?" | ":" | "::" | ";" | "..."
+           | "=" | "*=" | "/=" | "%=" | "+=" | "-="
+           | "<<=" | ">>=" | "&=" | "^=" | "|="
+           | "," | "#" | "##"
+           | "<:" | ":>" | "<%" | "%>" | "%:" | "%:%:" ;
+
+header-name = "<", h-char-sequence, ">"
+            | "\"", q-char-sequence, "\"" ;
+
+h-char-sequence = h-char, { h-char } ;
+
+h-char = ? 源字符集中除换行和 > 外的任意字符 ? ;
+
+q-char-sequence = q-char, { q-char } ;
+
+q-char = ? 源字符集中除换行和双引号外的任意字符 ? ;
+
+pp-number = (digit | ".", digit),
+            { identifier-continue
+            | "'", (digit | nondigit)
+            | ("e" | "E" | "p" | "P"), sign
+            | "."
+            } ;

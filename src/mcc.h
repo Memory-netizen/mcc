@@ -2,6 +2,7 @@
 #define MCC_H_
 
 #include <errno.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -9,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -55,6 +58,12 @@ typedef struct {
 } MccState;
 
 // lexer.c
+
+typedef struct {
+    const char *data;
+    size_t size;
+} MemoryBuffer;
+
 void tokenize(MccState *s);
 
 // util.c
@@ -62,5 +71,6 @@ _Noreturn void fatal(char *fmt, ...) __attribute__((format(printf, 1, 2)));
 void *emalloc(size_t n);
 void *emalloc_big(size_t n);
 char *format(char *s, ...) __attribute__((format(printf, 1, 2)));
+int open_file(MemoryBuffer *mem_buf, const char *path);
 
 #endif  // MCC_H_

@@ -154,9 +154,7 @@ static void run_subprocess(MccState *s, char **args) {
         fprintf(stderr, "mcc: internal compiler error: %s killed by signal %d\n", args[0], WTERMSIG(status));
         exit(1);
     }
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        exit(1);
-    }
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) exit(1);
 }
 
 // 修改文件后缀名
@@ -217,7 +215,7 @@ int main(int argc, char **argv) {
         char *output;
         if (s.opt_o) {
             output = s.opt_o;
-        } else if (s.opt_E) {
+        } else if (s.opt_E || s.opt_dump_raw_tokens) {
             output = "-";
         } else if (s.opt_S && s.opt_ll) {
             output = replace_extn(input, ".ll");

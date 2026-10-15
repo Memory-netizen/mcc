@@ -9,6 +9,8 @@
 
 // 报告致命错误并结束进程
 _Noreturn void fatal(char *fmt, ...) {
+    fflush(stdout);
+    fprintf(stderr, "\n");
     bool use_color = isatty(fileno(stderr));
     if (use_color)
         fprintf(stderr, COLOR_BOLD "mcc:" COLOR_RESET COLOR_RED " fatal error: " COLOR_RESET);
